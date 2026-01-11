@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { assets } from '../../assets/assets'
 import { UserButton } from '@clerk/clerk-react'
 
-const NavBar = () => {
+const Navbar = () => {
   return (
     <>
       <div className='flex items-center justify-between px-4 md:px-8 py-3 bg-white transition-all duration-300 border-b border-gray-300'>
@@ -16,4 +16,4 @@ const NavBar = () => {
   )
 }
 
-export default NavBar
+export default Navbar
