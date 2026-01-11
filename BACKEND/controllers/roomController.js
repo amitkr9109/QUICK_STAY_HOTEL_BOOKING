@@ -69,12 +69,21 @@ export const getOwnerRooms = async (req, res) => {
 export const toggleRoomAvailability = async (req, res) => {
     try {
         const { roomId } = req.body;
+        const owner = req.auth().userId;
 
-        const roomData = await Room.findById(roomId);
-        roomData.isAvailable = !roomData.isAvailable;
-        await roomData.save();
+        const room = await Room.findById(roomId).populate("hotel");
+        if(!room) {
+            return res.json({ success: false, message: "Room not found" });
+        }
 
-        res.json({ success: true, message: "Room availability updated" });
+        if(room.hotel.owner.toString() !== owner) {
+            return res.json({ success: false, message: "Unauthorized - You can only toggle your own rooms" });
+        }
+
+        room.isAvailable = !room.isAvailable;
+        await room.save();
+
+        res.json({ success: true, message: `Room ${room.isAvailable ? "enabled" : "disabled"} successfully` });
         
     } catch (error) {
         res.json({ success: false, message: error.message }); 

@@ -1,4 +1,3 @@
-import transporter from "../config/nodemailer.js";
 import Booking from "../models/BookingModel.js";
 import Hotel from "../models/HotelModel.js";
 import Room from "../models/RoomModel.js";
@@ -8,15 +7,16 @@ export const checkAvailability = async ({ checkInDate, checkOutDate, room }) => 
     try {
         const bookings = await Booking.find({
             room,
-            checkInDate: { $lte: checkOutDate },
-            checkOutDate: { $lte: checkInDate },
+            $or: [
+                { checkInDate: { $lt: checkOutDate }, checkOutDate: { $gt: checkInDate } }
+            ]
         });
 
         const isAvailable = bookings.length === 0;
         return isAvailable;
 
     } catch (error) {
-        res.json({ success: false, message: error.message }); 
+        throw error;
     }
 }
 
@@ -39,7 +39,7 @@ export const checkAvailabilityAPI = async (req, res) => {
 
 export const createBooking = async (req, res) => {
     try {
-        const { room, checkInDate, checkOutDate, guests } = req.body;
+        const { room, checkInDate, checkOutDate, guests, paymentMethod } = req.body;
 
         const user = req.user._id;
 
@@ -70,36 +70,14 @@ export const createBooking = async (req, res) => {
             guests: +guests,
             checkInDate,
             checkOutDate,
-            totalPrice
+            totalPrice,
+            paymentMethod: paymentMethod || "Pay At Hotel"
         });
-
-        const mailOptions = {
-            from: process.env.SENDER_EMAIL,
-            to: req.user.email,
-            subject: "Hotel Booking Details",
-            html: `
-                <h2>Your Booking Details</h2>
-                <p>Dear: ${req.user.username}</p>
-                <p>Thank you for your booking! with us. Here are your booking details:</p>
-                <ul>
-                    <li><strong>Booking ID:</strong> ${booking._id}</li>
-                    <li><strong>Hotel Name:</strong> ${roomData.hotel.name}</li>
-                    <li><strong>location:</strong> ${roomData.hotel.address}</li>
-                    <li><strong>Date:</strong> ${booking.checkInDate.toDateString()}</li>
-                    <li><strong>Booking Amount:</strong> ${booking.totalPrice}</li>
-                </ul>
-                <p>We look forward to Welcoming you!</p>
-                <p>Best regards,<br/>Hotel Booking Team</p>
-            `
-        }
-
-        await transporter.sendMail({
-
-        })
 
         res.json({ success: true, message: "Booking created successfully" });
 
     } catch (error) {
+        console.error("Booking creation error:", error.message);
         res.json({ success: false, message: "Failed to create booking" }); 
     }
 }

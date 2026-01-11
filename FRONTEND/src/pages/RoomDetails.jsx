@@ -13,8 +13,8 @@ const RoomDetails = () => {
 
   const [room, setRoom] = useState(null);
   const [mainImage, setMainImage] = useState(null);
-  const [checkInDate, setCheckInDate] = useState(null);
-  const [checkOutDate, setCheckOutDate] = useState(null);
+  const [checkInDate, setCheckInDate] = useState("");
+  const [checkOutDate, setCheckOutDate] = useState("");
   const [guests, setGuests] = useState(1);
   const [isAvailable, setIsAvailable] = useState(false);
 
@@ -41,6 +41,7 @@ const RoomDetails = () => {
       else {
         toast.error(data.message);
       }
+       
     } catch (error) {
       toast.error(error.message);
     }
@@ -54,7 +55,7 @@ const RoomDetails = () => {
       }
       else {
         const { data } = await axios.post("/api/bookings/book", {
-          room: id, checkInDate, checkOutDate, guests, PaymentMethod: "Pay At Hotel"
+          room: id, checkInDate, checkOutDate, guests, paymentMethod: "Pay At Hotel"
         }, {
           headers: { Authorization: `Bearer ${await getToken()}` }
         });
@@ -159,7 +160,7 @@ const RoomDetails = () => {
               <input 
                 type="number" 
                 id='guests' 
-                placeholder='0' 
+                placeholder='1' 
                 className='max-w-20 rounded border border-gray-300 px-3 py-2 mt-1.5 outline-none' 
                 required 
                 value={guests}
